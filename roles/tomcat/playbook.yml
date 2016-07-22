@@ -1,4 +1,4 @@
-- name: tomcat
+- name: tomcat-instance
 
   environment:
     http_proxy: http://proxy_centrale:3128

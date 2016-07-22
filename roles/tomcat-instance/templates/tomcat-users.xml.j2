@@ -5,6 +5,6 @@
               version="1.0">
   <role rolename="admin-gui"/>
   <role rolename="manager-gui"/>
-  <user username="mng-{{ dom }}-{{ env }}" password="toto" roles="manager-gui"/>
-  <user username="adm-{{ dom }}-{{ env }}" password="titi" roles="admin-gui"/>
+  <user username="mng-{{ dom_name }}-{{ farm_env }}" password="toto" roles="manager-gui"/>
+  <user username="adm-{{ dom_name }}-{{ farm_env }}" password="titi" roles="admin-gui"/>
 </tomcat-users>

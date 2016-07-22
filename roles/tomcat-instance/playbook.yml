@@ -1,34 +1,15 @@
 - name: tomcat-instance
-  hosts: tomcat
 
   vars:
       instance_base_dir:   /sysapp/tomcat-instances
-      instance_dir:        /sysapp/tomcat-instances/{{ dom }}-{{ farm }}{{ farm_node }}{{ supp }}-{{ env }}
-
-      farm:                "01"
-      farm_node:           "1" 
-      supp:                ''
-      dom:                 pepspmt
-      env:                 i
-
-      inst:                "{{ dom }}-{{ farm }}{{ farm_node }}{{ supp }}-{{ env }}"
+      instance_dir:        /sysapp/tomcat-instances/{{ dom_name }}-{{ farm_number }}{{ farm_node }}{{ supp }}-{{ farm_env }}
+      inst:                "{{ dom_name }}-{{ farm_number }}{{ farm_node }}{{ supp }}-{{ farm_env }}"
       log_dir:             /var/log/tomcat/instances/{{ inst }}
       logapp_dir:          /var/log/tomcat/apps/{{ inst }}
-
-      xmx: 512
-      xms: 512
-      env_dev: int
-      http_port: 7800
-      shut_port: 7500
-      https_port: 7400
-      jmx_port: 7100
-      proxy_name: vad.oney.com
-
   roles:
      - { role: jre, jre_ver: 8u73 }
      - { role: tomcat, tomcat_ver: 8.0.32 }
      - role: oem
-      
       
   sudo: yes
 

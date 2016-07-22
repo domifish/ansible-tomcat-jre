@@ -15,8 +15,37 @@ ansible_connection=ssh
 ansible_user=root
 ansible_ssh_pass=Cloudtest1234
 
-[farm1-intservers]
+#-- Fermes
+[farm01-int]
 svtestvra099
 
-[farm1:children]
-farm1-intservers
+[farm01:children]
+farm01-int
+
+[farm01:vars]
+farm_number=01
+
+
+#-- Atterrissage des domaines sur les fermes
+[pepspmt-i-1]
+svtestvra099
+
+[pepspmt-i-1:vars]
+supp=          ""
+xmx=           1024
+xms=           1024
+http_port=     7800
+shut_port=     7500
+https_port=    7400
+jmx_port=      7100
+MaxMetaspace=  384
+
+[dom_pepspmt:vars]
+dom_name=      "pepsmt"
+proxy_name=    "vad.oney.com"
+
+[dom_pepspmt:children]
+pepspmt-i-1
+
+[alldom:children]
+dom_pepspmt
