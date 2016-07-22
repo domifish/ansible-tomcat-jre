@@ -1,0 +1,47 @@
+# This is the default ansible 'hosts' file.
+#
+# It should live in /etc/ansible/hosts
+#
+#   - Comments begin with the '#' character
+#   - Blank lines are ignored
+#   - Groups of hosts are delimited by [header] elements
+#   - You can enter hostnames or ip addresses
+#   - A hostname/ip can be a member of multiple groups
+
+#data1 ansible_host=10.70.30.18
+
+[all:vars]
+ansible_connection=ssh 
+ansible_user=root
+ansible_ssh_pass=Cloudtest1234
+
+[logstash]
+svtestelk1
+svtestelk2
+
+[elastic-client]
+svtestelk4
+
+[elastic-datamaster]
+svtestelk1
+svtestelk2
+
+[elastic-master]
+svtestelk5
+
+[elastic:children]
+elastic-client
+elastic-datamaster
+elastic-master
+
+
+# var should be in /etc/ansible/group_vars/elastic-client.yml
+#[elastic-client:var]
+#[elastic-master:var]
+#[elastic:var]
+
+[tomcat-int]
+svtestvra099
+
+[tomcat:children]
+tomcat-int

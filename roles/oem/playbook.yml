@@ -1,0 +1,24 @@
+- name: oem
+
+  sudo: yes
+
+  tasks:
+
+# System Prerequisites
+# ---
+    - name: "Grid | Create oinstall group"
+      group: name=oinstall gid=54321 state=present system=yes
+
+    - name: "Grid | Create oragrid user"
+      user: 
+        name=oragrid uid=90002 
+        password='$6$WT6oKTUm$Nj/nNjvxzDc9IgyldCP/D5slPyz1gRzJ392a66LSuyf8Nm2IbNRNyTR/DOdE7c39KX3q0hliSvoLq/.FMQepx/' 
+        state=present system=yes
+
+# OEM
+# ---
+    - name: "OEM | Ensure OEM directories already exists"
+      file: path="/sysapp/grid13" state=directory owner=oragrid group=oinstall
+
+    - name: "OEM | Ensure sudoers config for oragrid exists"
+      lineinfile: "dest=/etc/sudoers.d/tomcat_admin create=yes state=present regexp='^oragrid ALL' line='oragrid ALL=(root)      NOPASSWD:  ALL'"

@@ -1,0 +1,15 @@
+[Unit]
+Description=Apache Tomcat {{ inst }}
+After=network.target
+
+[Service]
+EnvironmentFile=-/sysapp/tomcat-conf/instances/{{ inst }}/tomcat.env
+Type=forking
+Umask=027
+ExecStart=/bin/sh ${CATALINA_HOME}/bin/startup.sh
+ExecStop=/bin/sh ${CATALINA_HOME}/bin/shutdown.sh
+User={{ user }}
+Group=tec-tomcat
+
+[Install]
+WantedBy=multi-user.target

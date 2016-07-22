@@ -1,0 +1,172 @@
+- name: tomcat-instance
+  hosts: tomcat
+
+  vars:
+      instance_base_dir:   /sysapp/tomcat-instances
+      instance_dir:        /sysapp/tomcat-instances/{{ dom }}-{{ farm }}{{ node }}{{ supp }}-{{ env }}
+
+      farm:                "01"
+      node:                "1" 
+      supp:                ''
+      dom:                 pepspmt
+      env:                 i
+
+      inst:                "{{ dom }}-{{ farm }}{{ node }}{{ supp }}-{{ env }}"
+      log_dir:             /var/log/tomcat/instances/{{ inst }}
+      logapp_dir:          /var/log/tomcat/apps/{{ inst }}
+
+      xmx: 512
+      xms: 512
+      env_dev: int
+      http_port: 7800
+      shut_port: 7500
+      https_port: 7400
+      jmx_port: 7100
+      proxy_name: vad.oney.com
+
+  roles:
+     - { role: jre, jre_ver: 8u73 }
+     - { role: tomcat, tomcat_ver: 8.0.32 }
+     - role: oem
+      
+      
+  sudo: yes
+
+  tasks:
+
+# Create Tomcat Configuration
+# ---
+    - name: "Tomcat Configuration | Create base directory"
+      file: path={{ tomcat_conf_dir }} state=directory mode=0755
+
+    - name: "Tomcat Configuration | Create instance directory"
+      file: path={{ tomcat_conf_dir }}/{{ item }}/{{ inst }} state=directory mode=0755
+      with_items:
+         - "instances"
+         - "apps"
+
+    - name: "Tomcat Configuration | Create security directory"
+      file: path={{ tomcat_conf_dir }}/instances/{{ inst }}/security state=directory mode=0755 owner=tec-tomcat group=tec-tomcat
+
+# Create Tomcat Instances
+# ---
+    - name: "Tomcat Instance | Ensure Tomcat instance already exist"
+      file: path="{{ instance_dir }}" state=directory
+
+    - name: "Tomcat Instance | Test si l instance est la"
+      stat: path={{ instance_dir }}/conf/server.xml
+      register: instance
+
+    - name: "Tomcat Instance | Test si le CA est la"
+      stat: path={{ tomcat_conf_dir }}/instances/{{ inst }}/security/cacert.jks
+      register: cacert
+
+    - name: "Tomcat Instance | Create CA"
+      template: src=cacert.jks.j2 dest={{ tomcat_conf_dir }}/instances/{{ inst }}/security/cacert.jks
+      when: cacert.stat.exists is defined and cacert.stat.exists == False
+
+    - name: Create log directory
+      file: path={{ log_dir }} state=directory mode=0755
+ 
+    - name: Create directories in instance
+      file: path={{ instance_dir }}/{{ item }} state=directory mode=0755
+      with_items:
+        - "temp"
+        - "bin"
+        - "lib"
+        - "work"
+
+    - name: Create instance
+      command: cp -R {{ tomcat_base_dir }}/default/{{ item }} {{ instance_dir }}/{{ item }}
+      with_items:
+         - "conf"
+         - "webapps"
+      when: instance.stat.exists is defined and instance.stat.exists == False
+
+    - name: Create application log directory
+      file: path={{ logapp_dir }} state=directory mode=0755
+
+    - name: Create symlink
+      file: src=/{{ log_dir }} dest={{ instance_dir }}/logs state=link
+      when: instance.stat.exists is defined and instance.stat.exists == False
+
+    - name: "Tomcat Instance | Create configuraiton file"
+      template: src=tomcat.env.j2 dest={{ tomcat_conf_dir }}/instances/{{ inst }}/tomcat.env
+     # tags:
+     #   - test
+
+    - name: "Tomcat Instance | Create jmx access file"
+      template: src=jmx.access.j2 dest={{ tomcat_conf_dir }}/instances/{{ inst }}/security/jmx.access
+
+    - name: "Tomcat Instance | Create jmx password file"
+      template: src=jmx.password.j2 dest={{ tomcat_conf_dir }}/instances/{{ inst }}/security/jmx.password
+
+    - name: "Tomcat Instance | Create server.xml file"
+      template: src=server.xml.j2 dest={{ instance_dir }}/conf/server.xml
+
+    - name: "Tomcat Instance | Create tomcat-users.xml file"
+      template: src=tomcat-users.xml.j2 dest={{ instance_dir }}/conf/tomcat-users.xml
+
+    - name: "Tomcat Instance | Create init script"
+      template: src=tomcat_init.j2 dest=/usr/lib/systemd/system/tomcat-{{ inst }}.service
+
+    - name: "Tomcat Instance | Reload systemd"
+      shell: systemctl daemon-reload
+
+    - name: "Tomcat Instance | Enable service"
+      service: name=tomcat-{{ inst }}.service enabled=yes
+
+      
+
+# Manage Rights
+# ---
+    - name: Change ownership of Tomcat instance basedir
+      file: path={{ instance_dir }} owner=tec-tomcat group=tec-tomcat mode=0755
+
+    - name: Change ownership of Tomcat instance
+      file: path={{ instance_dir }} owner={{ user }} group=tec-tomcat recurse=yes
+
+    - name: Change ownership of Tomcat conf dir
+      file: path={{ tomcat_conf_dir }}/{{ item }}/ owner=tec-tomcat group=tec-tomcat mode=0755
+      with_items:
+         - "instances"
+         - "apps"
+
+    - name: Change ownership of Tomcat conf dir
+      file: path={{ tomcat_conf_dir }}/{{ item }}/{{ inst }} owner={{ user }} group=tec-tomcat recurse=yes mode=0755
+      with_items:
+         - "instances"
+         - "apps"
+
+    - name: Change ownership of Tomcat conf dir
+      file: path={{ tomcat_conf_dir }}/instances/{{ inst }}/security/{{ item }} owner={{ user }} group=tec-tomcat mode=0600
+      with_items:
+         - "jmx.password"
+         - "jmx.access"
+
+    - name: Change ownership of Tomcat logs
+      file: path=/var/log/tomcat owner=tec-tomcat group=tec-tomcat mode=0755
+
+    - name: Change ownership of Tomcat logs
+      file: path=/var/log/tomcat//{{ item }} owner=tec-tomcat group=tec-tomcat mode=0755
+      with_items:
+         - "instances"
+         - "apps"
+
+    - name: Change ownership of Tomcat logs
+      file: path=/var/log/tomcat//{{ item }}/{{ inst }} owner={{ user }} group=tec-tomcat recurse=yes mode=0755
+      with_items:
+         - "instances"
+         - "apps"
+
+    - name: "Rights | Ensure sudoers config for exploit exists"
+      lineinfile: "dest=/etc/sudoers.d/tomcat_admin create=yes state=present regexp='%exploit .* tomcat' line='%exploit ALL=(root)  NOPASSWD:  /usr/bin/systemctl * tomcat*'"
+
+    - name: "Rights | Ensure exploit has sufficient rights"
+      acl: name="{{ tomcat_conf_dir }}" entry="d:group:exploit:rwx" state=present recursive=yes
+
+    - name: "Rights | Ensure %exploit has sufficient rights"
+      acl: name="{{ instance_dir }}/conf/{{ item }}" entry="group:exploit:rwx" state=present
+      with_items:
+         - "server.xml"
+         - "context.xml"

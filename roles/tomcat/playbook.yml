@@ -1,0 +1,78 @@
+- name: tomcat
+
+  environment:
+    http_proxy: http://proxy_centrale:3128
+    https_proxy: http://proxy_centrale:3128
+
+  sudo: yes
+
+  tasks:
+
+# System Prerequisites
+# ---
+    - name: "Tomcat Engine | Create tomcat group"
+      group: name=tec-tomcat gid=1146 state=present system=yes
+
+    - name: "Tomcat Engine | Create tomcat user "
+      user: name=tec-tomcat comment="John Doe" uid=1146 group=tec-tomcat system=yes
+
+    - name: "Tomcat Engine | Create tomcat specific env user "
+      user: name={{ user }} comment="John Doe" uid={{ uid }} group=tec-tomcat system=yes
+
+# System Config
+# ---
+
+    - name: "Tomcat Engine | Installing Log Purge"
+      template: src=tomcat_cron.j2 dest=/etc/cron.d/tomcat_admin
+
+    - name: "Tomcat Engine | Installing Rotate"
+      template: src=tomcat_rotate.j2 dest=/etc/logrotate.d/tomcat
+
+
+# Install Tomcat Engine
+# ---
+    - name: "Tomcat | Ensure Tomcat engine directories already exist"
+      file: path="{{ tomcat_base_dir }}" state=directory
+
+    - name: "Tomcat | Ensure Tomcat directories already exist"
+      stat: path={{ tomcat_base_dir }}/apache-tomcat-{{ tomcat_ver }}/bin/catalina.sh
+      register: core
+
+    - name: "Tomcat | download tarball"
+      get_url:
+       url=http://archive.apache.org/dist/tomcat/tomcat-8/v{{ tomcat_ver}}/bin/apache-tomcat-{{ tomcat_ver}}.tar.gz
+       dest=/tmp/apache-tomcat-{{ tomcat_ver }}.tar.gz
+      when: core.stat.exists is defined and core.stat.exists == False
+
+    - name: "Tomcat | untar Tomcat do destination directory"
+      command: chdir={{ tomcat_base_dir }} tar xvf /tmp/apache-tomcat-{{ tomcat_ver }}.tar.gz creates={{ tomcat_base_dir}}/apache-tomcat-{{ tomcat_ver }}
+      when: core.stat.exists is defined and core.stat.exists == False
+
+    - name: "Oracle | Check tomcat enfine default link"
+      stat: "path={{ tomcat_base_dir }}/default"
+      register: tc_engine_default_link
+
+    - name: "Tomcat | Create symlink "
+      file: src={{ tomcat_base_dir }}/apache-tomcat-{{ tomcat_ver }} dest={{ tomcat_base_dir }}/default state=link
+      when: not tc_engine_default_link.exists
+
+    - name: "Tomcat | Suppress useless directories"
+      file: path={{ tomcat_base_dir }}/apache-tomcat-{{ tomcat_ver }}/{{ item }} state=absent
+      with_items:
+         - "logs"
+         - "temp"
+
+
+# Manage Rights
+# ---
+    - name: Change ownership of Tomcat engine dir
+      file: path={{ tomcat_base_dir }} owner=tec-tomcat group=tec-tomcat mode=0755 recurse=yes
+
+    - name: Change ownership of Tomcat logs
+      file: path=/var/log/tomcat owner=tec-tomcat group=tec-tomcat mode=0755
+
+    - name: "Rights | Ensure sudoers config for exploit exists"
+      lineinfile: "dest=/etc/sudoers.d/tomcat_admin create=yes state=present regexp='%exploit .* tomcat' line='%exploit ALL=(root)  NOPASSWD:  /usr/bin/systemctl * tomcat*'"
+
+    - name: "Rights | Ensure exploit has sufficient rights"
+      acl: name="{{ tomcat_conf_dir }}" entry="d:group:exploit:rwx" state=present recursive=yes

@@ -1,0 +1,277 @@
+- hosts: tomcat
+  roles:
+     - role: jre
+
+  environment:
+    http_proxy: http://proxy_centrale:3128
+    https_proxy: http://proxy_centrale:3128
+
+  vars:
+      tc_ver:      8.0.32
+      tc_eng_dir:  /sysapp/tomcat-engine
+      tc_jre_dir:  /sysapp/tomcat-jre
+      tc_cfg_dir:  /sysapp/tomcat-conf
+      tc_ins_dir:  /sysapp/tomcat-instances
+      farm:        "01"
+      node:        "1" 
+      supp:        ''
+      dom:         pepspmt
+      env:          i
+      inst:        "{{ dom }}-{{ farm }}{{ node }}{{ supp }}-{{ env }}"
+      inst_dir:    /sysapp/tomcat-instances/{{ dom }}-{{ farm }}{{ node }}{{ supp }}-{{ env }}
+      log_dir:     /var/log/tomcat/instances/{{ inst }}
+      logapp_dir:  /var/log/tomcat/apps/{{ inst }}
+      jre_dir:     "{{ tc_jre_dir }}/jre_1.{{ jre_oracle_version }}"
+
+      xmx: 512
+      xms: 512
+      env_dev: int
+      http_port: 7800
+      shut_port: 7500
+      https_port: 7400
+      jmx_port: 7100
+      proxy_name: vad.oney.com
+      
+      
+  sudo: yes
+
+  tasks:
+
+# System Prerequisites
+# ---
+    - name: "System | Create tomcat group"
+      group: name=tec-tomcat gid=1146 state=present system=yes
+
+    - name: "System | Create tomcat user "
+      user: name=tec-tomcat comment="John Doe" uid=1146 group=tec-tomcat system=yes
+
+    - name: "System | Create tomcat specific env user "
+      user: name={{ user }} comment="John Doe" uid={{ uid }} group=tec-tomcat system=yes
+
+    - name: "System | Create oinstall group"
+      group: name=oinstall gid=54321 state=present system=yes
+
+    - name: "System | Create oragrid user"
+      user: 
+        name=oragrid uid=90002 
+        password='$6$WT6oKTUm$Nj/nNjvxzDc9IgyldCP/D5slPyz1gRzJ392a66LSuyf8Nm2IbNRNyTR/DOdE7c39KX3q0hliSvoLq/.FMQepx/' 
+        state=present system=yes
+
+# System Config
+# ---
+
+    - name: "System Config | Purge"
+      template: src=tomcat_cron.j2 dest=/etc/cron.d/tomcat_admin
+
+    - name: "System Config | Rotate"
+      template: src=tomcat_rotate.j2 dest=/etc/logrotate.d/tomcat
+
+
+# OEM
+# ---
+    - name: "OEM | Ensure OEM directories already exists"
+      file: path="/sysapp/grid13" state=directory owner=oragrid group=oinstall
+
+    - name: "OEM | Ensure sudoers config for oragrid exists"
+      lineinfile: "dest=/etc/sudoers.d/tomcat_admin create=yes state=present regexp='^oragrid ALL' line='oragrid ALL=(root)      NOPASSWD:  ALL'"
+
+
+# Install Oracle JRE
+# ---
+    - name: "Oracle | Ensure JRE directories for tomcat already exists"
+      file: path="{{ tc_jre_dir }}" state=directory
+
+    - name: "Oracle | Ensure JRE version directories for tomcat already exists"
+      file: path="{{ jre_dir }}" state=directory
+
+    - name: "Oracle | Check JRE install"
+      stat: path={{ jre_dir }}/bin
+      register: jre_oracle_bin
+
+    - name: "Oracle | download JRE tarball"
+      get_url:
+       url="{{ jre_oracle_download_url }}"
+       dest="{{ jre_oracle_download_dest }}"
+       headers='Cookie:gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie'       
+      when: not jre_oracle_bin.stat.exists
+
+    - name: "Oracle | untar JRE to des directory"
+      command: tar zxvf {{ jre_oracle_download_dest }} -C {{ jre_dir }} --strip-components=1
+      args:
+        creates: "{{ jre_dir }}/bin"
+      when: not jre_oracle_bin.stat.exists
+
+    - name: "Oracle | default link"
+      file: src={{ jre_dir }} dest={{ tc_jre_dir }}/default state=link
+
+
+# Install Tomcat Engine
+# ---
+    - name: "Tomcat | Ensure Tomcat engine directories already exist"
+      file: path="{{ tc_eng_dir }}" state=directory
+
+    - name: "Tomcat | Ensure Tomcat directories already exist"
+      stat: path={{ tc_eng_dir }}/apache-tomcat-{{ tc_ver }}/bin/catalina.sh
+      register: core
+
+    - name: "Tomcat | download tarball"
+      get_url:
+       url=http://archive.apache.org/dist/tomcat/tomcat-8/v{{ tc_ver}}/bin/apache-tomcat-{{ tc_ver}}.tar.gz
+       dest=/tmp/apache-tomcat-{{ tc_ver }}.tar.gz
+      when: core.stat.exists is defined and core.stat.exists == False
+
+    - name: "Tomcat | untar Tomcat do destination directory"
+      command: chdir={{ tc_eng_dir }} tar xvf /tmp/apache-tomcat-{{ tc_ver }}.tar.gz creates={{ tc_eng_dir}}/apache-tomcat-{{ tc_ver }}
+      when: core.stat.exists is defined and core.stat.exists == False
+
+    - name: "Tomcat | Create symlink "
+      file: src={{ tc_eng_dir }}/apache-tomcat-{{ tc_ver }} dest={{ tc_eng_dir }}/default state=link
+
+    - name: "Tomcat | Suppress useless directories"
+      file: path={{ tc_eng_dir }}/apache-tomcat-{{ tc_ver }}/{{ item }} state=absent
+      with_items:
+         - "logs"
+         - "temp"
+
+# Create Tomcat Configuration
+# ---
+    - name: "Tomcat Configuration | Create configuration directory"
+      file: path={{ tc_cfg_dir }}/{{ item }}/{{ inst }} state=directory mode=0755
+      with_items:
+         - "instances"
+         - "apps"
+
+    - name: "Tomcat Configuration | Create security directory"
+      file: path={{ tc_cfg_dir }}/instances/{{ inst }}/security state=directory mode=0755
+
+# Create Tomcat Instances
+# ---
+    - name: "Tomcat Instance | Ensure Tomcat instance already exist"
+      file: path="{{ tc_ins_dir }}" state=directory
+
+    - name: "Tomcat Instance | Test si l instance est la"
+      stat: path={{ inst_dir }}/conf/server.xml
+      register: instance
+
+    - name: "Tomcat Instance | Test si le CA est la"
+      stat: path={{ tc_cfg_dir }}/instances/{{ inst }}/security/cacert.jks
+      register: cacert
+
+    - name: "Tomcat Instance | Create CA"
+      template: src=cacert.jks.j2 dest={{ tc_cfg_dir }}/instances/{{ inst }}/security/cacert.jks
+      when: cacert.stat.exists is defined and cacert.stat.exists == False
+
+    - name: Create log directory
+      file: path={{ log_dir }} state=directory mode=0755
+ 
+    - name: Create directories in instance
+      file: path={{ inst_dir }}/{{ item }} state=directory mode=0755
+      with_items:
+        - "temp"
+        - "bin"
+        - "lib"
+        - "work"
+
+    - name: Create instance
+      command: cp -R {{ tc_eng_dir }}/default/{{ item }} {{ inst_dir }}/{{ item }}
+      with_items:
+         - "conf"
+         - "webapps"
+      when: instance.stat.exists is defined and instance.stat.exists == False
+
+    - name: Create application log directory
+      file: path={{ logapp_dir }} state=directory mode=0755
+
+    - name: Create symlink
+      file: src=/{{ log_dir }} dest={{ inst_dir }}/logs state=link
+      when: instance.stat.exists is defined and instance.stat.exists == False
+
+    - name: "Tomcat Instance | Create configuraiton file"
+      template: src=tomcat.env.j2 dest={{ tc_cfg_dir }}/instances/{{ inst }}/tomcat.env
+     # tags:
+     #   - test
+
+    - name: "Tomcat Instance | Create jmx access file"
+      template: src=jmx.access.j2 dest={{ tc_cfg_dir }}/instances/{{ inst }}/security/jmx.access
+
+    - name: "Tomcat Instance | Create jmx password file"
+      template: src=jmx.password.j2 dest={{ tc_cfg_dir }}/instances/{{ inst }}/security/jmx.password
+
+    - name: "Tomcat Instance | Create server.xml file"
+      template: src=server.xml.j2 dest={{ inst_dir }}/conf/server.xml
+
+    - name: "Tomcat Instance | Create tomcat-users.xml file"
+      template: src=tomcat-users.xml.j2 dest={{ inst_dir }}/conf/tomcat-users.xml
+
+    - name: "Tomcat Instance | Create init script"
+      template: src=tomcat_init.j2 dest=/usr/lib/systemd/system/tomcat-{{ inst }}.service
+
+    - name: "Tomcat Instance | Reload systemd"
+      shell: systemctl daemon-reload
+
+    - name: "Tomcat Instance | Enable service"
+      service: name=tomcat-{{ inst }}.service enabled=yes
+
+      
+
+# Manage Rights
+# ---
+    - name: Change ownership of Tomcat engine dir
+      file: path={{ tc_eng_dir }} owner=tec-tomcat group=tec-tomcat mode=0755 recurse=yes
+
+    - name: Change ownership of Tomcat instance basedir
+      file: path={{ tc_ins_dir }} owner=tec-tomcat group=tec-tomcat mode=0755
+
+    - name: Change ownership of Tomcat instance
+      file: path={{ inst_dir }} owner={{ user }} group=tec-tomcat recurse=yes
+
+    - name: Change ownership of Tomcat Jre dir
+      file: path={{ tc_jre_dir }} owner=tec-tomcat group=tec-tomcat mode=0755 recurse=yes
+
+    - name: Change ownership of Tomcat conf dir
+      file: path={{ tc_cfg_dir }} owner=tec-tomcat group=tec-tomcat mode=0755
+
+    - name: Change ownership of Tomcat conf dir
+      file: path={{ tc_cfg_dir }}/{{ item }}/ owner=tec-tomcat group=tec-tomcat mode=0755
+      with_items:
+         - "instances"
+         - "apps"
+
+    - name: Change ownership of Tomcat conf dir
+      file: path={{ tc_cfg_dir }}/{{ item }}/{{ inst }} owner={{ user }} group=tec-tomcat recurse=yes mode=0755
+      with_items:
+         - "instances"
+         - "apps"
+
+    - name: Change ownership of Tomcat conf dir
+      file: path={{ tc_cfg_dir }}/instances/{{ inst }}/security/{{ item }} owner={{ user }} group=tec-tomcat mode=0600
+      with_items:
+         - "jmx.password"
+         - "jmx.access"
+
+    - name: Change ownership of Tomcat logs
+      file: path=/var/log/tomcat owner=tec-tomcat group=tec-tomcat mode=0755
+
+    - name: Change ownership of Tomcat logs
+      file: path=/var/log/tomcat//{{ item }} owner=tec-tomcat group=tec-tomcat mode=0755
+      with_items:
+         - "instances"
+         - "apps"
+
+    - name: Change ownership of Tomcat logs
+      file: path=/var/log/tomcat//{{ item }}/{{ inst }} owner={{ user }} group=tec-tomcat recurse=yes mode=0755
+      with_items:
+         - "instances"
+         - "apps"
+
+    - name: "Rights | Ensure sudoers config for exploit exists"
+      lineinfile: "dest=/etc/sudoers.d/tomcat_admin create=yes state=present regexp='%exploit .* tomcat' line='%exploit ALL=(root)  NOPASSWD:  /usr/bin/systemctl * tomcat*'"
+
+    - name: "Rights | Ensure exploit has sufficient rights"
+      acl: name="{{ tc_cfg_dir }}" entry="d:group:exploit:rwx" state=present recursive=yes
+
+    - name: "Rights | Ensure %exploit has sufficient rights"
+      acl: name="{{ inst_dir }}/conf/{{ item }}" entry="group:exploit:rwx" state=present
+      with_items:
+         - "server.xml"
+         - "context.xml"

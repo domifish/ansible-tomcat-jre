@@ -1,0 +1,55 @@
+<?xml version='1.0' encoding='utf-8'?>
+
+<Server port="{{ shut_port }}" shutdown="hello#01">
+  <Listener className="org.apache.catalina.startup.VersionLoggerListener" />
+  <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
+
+  <!-- Prevent memory leaks due to use of particular java/javax APIs-->
+  <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
+  <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
+  <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
+
+  <GlobalNamingResources>
+    <Resource name="UserDatabase" auth="Container"
+              type="org.apache.catalina.UserDatabase"
+              description="User database that can be updated and saved"
+              factory="org.apache.catalina.users.MemoryUserDatabaseFactory"
+              pathname="conf/tomcat-users.xml" />
+  </GlobalNamingResources>
+
+  <Service name="Catalina">
+
+    <!-- HTTP Connector -->
+    <Connector port="{{ http_port }}" protocol="HTTP/1.1"
+	       maxThreads="350" acceptCount="200" processorCache="350"
+               connectionTimeout="20000"
+               compression="on" compressableMimeType="text/html,text/xml,text/plain"
+	       proxyName="{{ proxy_name }}"  proxyPort="443"
+               redirectPort="{{ https_port }}" />
+
+    <!-- HTTPS Connector -->
+    <Connector port="{{ https_port }}" protocol="org.apache.coyote.http11.Http11NioProtocol"
+               maxThreads="150" SSLEnabled="true" scheme="https" secure="true"
+               keystoreFile="{{ tomcat_conf_dir}}/instances/{{ inst }}/security/cacert.jks" keystorePass="changeit"
+               clientAuth="false" sslProtocol="TLS" />
+
+    <Engine name="Catalina" defaultHost="localhost">
+
+      <Realm className="org.apache.catalina.realm.LockOutRealm">
+        <Realm className="org.apache.catalina.realm.UserDatabaseRealm"
+               resourceName="UserDatabase"/>
+      </Realm>
+
+      <Host name="localhost"  appBase="webapps"
+            unpackWARs="true" autoDeploy="true">
+
+      <!-- Remote IP Valve -->
+     <Valve className="org.apache.catalina.valves.RemoteIpValve" remoteIpHeader="X-Forwarded-For" />
+
+     <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
+            prefix="localhost_access_log" suffix=".txt"
+            pattern="%h %l %u %t &quot;%r&quot; %s %b" />
+      </Host>
+    </Engine>
+  </Service>
+</Server>

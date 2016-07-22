@@ -1,0 +1,17 @@
+/var/log/tomcat/instance/*/catalina.out {
+  copytruncate
+  missingok
+  compress
+  missingok
+  daily
+  rotate 8
+}
+
+/var/log/tomcat/apps/*/*.log {
+  copytruncate
+  missingok
+  compress
+  missingok
+  daily
+  rotate 8
+}

@@ -1,0 +1,50 @@
+- name: jre
+  hosts: all
+  environment:
+    http_proxy: http://proxy_centrale:3128
+    https_proxy: http://proxy_centrale:3128
+  vars:
+      jre_base_dir:  /sysapp/tomcat-jre
+      jre_dir:       "{{ jre_base_dir }}/jre_1.{{ jre_ver }}"
+		
+  sudo: yes
+
+  tasks:
+
+# Install Oracle JRE
+# ---
+    - name: "Oracle | Ensure JRE directories for tomcat already exists"
+      file: path="{{ jre_base_dir }}" state=directory
+
+    - name: "Oracle | Ensure JRE version directories for tomcat already exists"
+      file: path="{{ jre_dir }}" state=directory
+
+    - name: "Oracle | Check JRE install"
+      stat: path={{ jre_dir }}/bin
+      register: jre_oracle_bin
+
+    - name: "Oracle | download JRE tarball"
+      get_url:
+       url="{{ jre_oracle_download_url }}"
+       dest="{{ jre_oracle_download_dest }}"
+       headers='Cookie:gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie'
+      when: not jre_oracle_bin.stat.exists
+
+    - name: "Oracle | untar JRE to des directory"
+      command: tar zxvf {{ jre_oracle_download_dest }} -C {{ jre_dir }} --strip-components=1
+      args:
+        creates: "{{ jre_dir }}/bin"
+      when: not jre_oracle_bin.stat.exists
+
+    - name: "Oracle | Check JRE link"
+      stat: "path={{ jre_dir }}/default"
+      register: jre_oracle_default_link
+
+    - name: "Oracle | default link"
+      file: src={{ jre_dir }} dest={{ jre_base_dir }}/default state=link
+    when: not jre_oracle_default_link.stat.exists
+
+# Manage Rights
+# ---
+    - name: Change ownership of Tomcat Jre dir
+      file: path={{ jre_base_dir }} owner=tec-tomcat group=tec-tomcat mode=0755 recurse=yes
