@@ -3,15 +3,15 @@
 
   vars:
       instance_base_dir:   /sysapp/tomcat-instances
-      instance_dir:        /sysapp/tomcat-instances/{{ dom }}-{{ farm }}{{ node }}{{ supp }}-{{ env }}
+      instance_dir:        /sysapp/tomcat-instances/{{ dom }}-{{ farm }}{{ farm_node }}{{ supp }}-{{ env }}
 
       farm:                "01"
-      node:                "1" 
+      farm_node:           "1" 
       supp:                ''
       dom:                 pepspmt
       env:                 i
 
-      inst:                "{{ dom }}-{{ farm }}{{ node }}{{ supp }}-{{ env }}"
+      inst:                "{{ dom }}-{{ farm }}{{ farm_node }}{{ supp }}-{{ env }}"
       log_dir:             /var/log/tomcat/instances/{{ inst }}
       logapp_dir:          /var/log/tomcat/apps/{{ inst }}
 

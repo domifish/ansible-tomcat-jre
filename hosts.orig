@@ -15,8 +15,33 @@ ansible_connection=ssh
 ansible_user=root
 ansible_ssh_pass=Cloudtest1234
 
-[farm1-intservers]
+[logstash]
+svtestelk1
+svtestelk2
+
+[elastic-client]
+svtestelk4
+
+[elastic-datamaster]
+svtestelk1
+svtestelk2
+
+[elastic-master]
+svtestelk5
+
+[elastic:children]
+elastic-client
+elastic-datamaster
+elastic-master
+
+
+# var should be in /etc/ansible/group_vars/elastic-client.yml
+#[elastic-client:var]
+#[elastic-master:var]
+#[elastic:var]
+
+[tomcat-int]
 svtestvra099
 
-[farm1:children]
-farm1-intservers
+[tomcat:children]
+tomcat-int

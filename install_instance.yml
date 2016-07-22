@@ -1,0 +1,14 @@
+[farm1-int]
+svtestvra099
+
+[farm1-qlf]
+
+[farm1:children]
+farm1-int
+farm1-qlf
+
+[farm1:vars]
+machin=truc
+
+[farms:children]
+farm1
