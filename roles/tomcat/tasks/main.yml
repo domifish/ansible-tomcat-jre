@@ -1,13 +1,3 @@
-- name: tomcat-instance
-
-  environment:
-    http_proxy: http://proxy_centrale:3128
-    https_proxy: http://proxy_centrale:3128
-
-  sudo: yes
-
-  tasks:
-
 # System Prerequisites
 # ---
     - name: "Tomcat Engine | Create tomcat group"
@@ -54,7 +44,7 @@
 
     - name: "Tomcat | Create symlink "
       file: src={{ tomcat_base_dir }}/apache-tomcat-{{ tomcat_ver }} dest={{ tomcat_base_dir }}/default state=link
-      when: not tc_engine_default_link.exists
+      when: not tc_engine_default_link.stat.exists
 
     - name: "Tomcat | Suppress useless directories"
       file: path={{ tomcat_base_dir }}/apache-tomcat-{{ tomcat_ver }}/{{ item }} state=absent

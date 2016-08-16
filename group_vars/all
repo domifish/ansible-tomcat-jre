@@ -1,5 +1,5 @@
 # file: /etc/ansible/group_vars/all
 # this is the site wide default
-
+jre_base_dir: /sysapp/tomcat-jre
 tomcat_base_dir:  /sysapp/tomcat-engine
 tomcat_conf_dir:  /sysapp/tomcat-conf

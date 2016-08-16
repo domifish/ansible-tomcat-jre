@@ -1,0 +1,5 @@
+instance_base_dir:   /sysapp/tomcat-instances
+instance_dir:        /sysapp/tomcat-instances/{{ dom_name }}-{{ farm_number }}{{ farm_node }}{{ supp }}-{{ farm_env }}
+inst:                "{{ dom_name }}-{{ farm_number }}{{ farm_node }}{{ supp }}-{{ farm_env }}"
+log_dir:             /var/log/tomcat/instances/{{ inst }}
+logapp_dir:          /var/log/tomcat/apps/{{ inst }}

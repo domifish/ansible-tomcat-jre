@@ -1,16 +1,3 @@
-- name: jre
-  hosts: all
-  environment:
-    http_proxy: http://proxy_centrale:3128
-    https_proxy: http://proxy_centrale:3128
-  vars:
-      jre_base_dir:  /sysapp/tomcat-jre
-      jre_dir:       "{{ jre_base_dir }}/jre_1.{{ jre_ver }}"
-		
-  sudo: yes
-
-  tasks:
-
 # Install Oracle JRE
 # ---
     - name: "Oracle | Ensure JRE directories for tomcat already exists"
@@ -42,7 +29,7 @@
 
     - name: "Oracle | default link"
       file: src={{ jre_dir }} dest={{ jre_base_dir }}/default state=link
-    when: not jre_oracle_default_link.stat.exists
+      when: not jre_oracle_default_link.stat.exists
 
 # Manage Rights
 # ---

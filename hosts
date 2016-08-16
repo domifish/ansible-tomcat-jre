@@ -47,5 +47,8 @@ proxy_name=    "vad.oney.com"
 [dom_pepspmt:children]
 pepspmt-i-1
 
+[integration:children]
+farm01-int
+
 [alldom:children]
 dom_pepspmt

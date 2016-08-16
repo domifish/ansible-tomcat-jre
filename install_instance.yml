@@ -1,3 +1,10 @@
-- hosts: alldom
+- hosts: dom_pepspmt
+  environment:
+    http_proxy: http://proxy_centrale:3128
+    https_proxy: http://proxy_centrale:3128
   roles:
-     - role: tomcat-instance
+     - { role: jre, jre_ver: 8u73 }
+     - { role: tomcat, tomcat_ver: 8.0.32 }
+     - role: oem
+     - tomcat-instance
+  sudo: yes

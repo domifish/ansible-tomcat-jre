@@ -1,20 +1,3 @@
-- name: tomcat-instance
-
-  vars:
-      instance_base_dir:   /sysapp/tomcat-instances
-      instance_dir:        /sysapp/tomcat-instances/{{ dom_name }}-{{ farm_number }}{{ farm_node }}{{ supp }}-{{ farm_env }}
-      inst:                "{{ dom_name }}-{{ farm_number }}{{ farm_node }}{{ supp }}-{{ farm_env }}"
-      log_dir:             /var/log/tomcat/instances/{{ inst }}
-      logapp_dir:          /var/log/tomcat/apps/{{ inst }}
-  roles:
-     - { role: jre, jre_ver: 8u73 }
-     - { role: tomcat, tomcat_ver: 8.0.32 }
-     - role: oem
-      
-  sudo: yes
-
-  tasks:
-
 # Create Tomcat Configuration
 # ---
     - name: "Tomcat Configuration | Create base directory"

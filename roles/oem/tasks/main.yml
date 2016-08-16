@@ -1,9 +1,3 @@
-- name: oem
-
-  sudo: yes
-
-  tasks:
-
 # System Prerequisites
 # ---
     - name: "Grid | Create oinstall group"
