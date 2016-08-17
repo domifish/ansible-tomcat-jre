@@ -41,7 +41,7 @@
       </Realm>
 
       <Host name="localhost"  appBase="webapps"
-            unpackWARs="true" autoDeploy="true">
+            unpackWARs="true" autoDeploy="true" deployXML="false" copyXML="false" undeployOldVersions="true">
 
       <!-- Remote IP Valve -->
      <Valve className="org.apache.catalina.valves.RemoteIpValve" remoteIpHeader="X-Forwarded-For" />
