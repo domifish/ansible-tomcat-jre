@@ -1,0 +1,15 @@
+# System Prerequisites
+# ---
+    - name: "Logs | Ensure httpd is installed"
+      yum: name=httpd state=present
+
+    - name: "Logs | Enable service httpd"
+      service: name=httpd.service enabled=yes
+
+    - name: "Logs | Check tomcat logs link in apache directories"
+      stat: "path=/var/www/html/tomcat"
+      register: tomcat_logs_httpd_link
+
+    - name: "Logs | Create symlink "
+      file: src=/var/log/tomcat dest=/var/www/html/tomcat state=link
+      when: not tomcat_logs_httpd_link.stat.exists

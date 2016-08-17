@@ -1,5 +1,5 @@
 # Oracle version, download, installation settings
-jre_oracle_download_url: "http://download.oracle.com/otn-pub/java/jdk/{{ jre_ver }}-b02/server-jre-{{ jre_ver }}-linux-x64.tar.gz"
+jre_oracle_download_url: "http://download.oracle.com/otn-pub/java/jdk/{{ jre_ver }}-b14/server-jre-{{ jre_ver }}-linux-x64.tar.gz"
 jre_oracle_download_referrer: "http://www.oracle.com/technetwork/java/javase/downloads/server-jre8-downloads-2133154.html"
 jre_oracle_download_cookie: >
   atgPlatoStop=1;

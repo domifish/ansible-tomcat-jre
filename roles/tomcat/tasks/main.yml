@@ -63,6 +63,3 @@
 
     - name: "Rights | Ensure sudoers config for exploit exists"
       lineinfile: "dest=/etc/sudoers.d/tomcat_admin create=yes state=present regexp='%exploit .* tomcat' line='%exploit ALL=(root)  NOPASSWD:  /usr/bin/systemctl * tomcat*'"
-
-    - name: "Rights | Ensure exploit has sufficient rights"
-      acl: name="{{ tomcat_conf_dir }}" entry="d:group:exploit:rwx" state=present recursive=yes
