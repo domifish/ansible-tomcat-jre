@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 
-<Server port="{{ shut_port }}" shutdown="hello#01">
+<Server port="{{ shut_port }}" shutdown="sdn-{{ env }}">
   <Listener className="org.apache.catalina.startup.VersionLoggerListener" />
   <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
 
