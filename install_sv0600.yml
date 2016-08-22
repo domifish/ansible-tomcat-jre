@@ -1,4 +1,4 @@
-- hosts: dom_pepspmt
+- hosts: sv0600
   environment:
     http_proxy: http://proxy_centrale:3128
     https_proxy: http://proxy_centrale:3128
@@ -8,4 +8,3 @@
      - role: logreader
      - role: oem
      - tomcat-instance
-  sudo: yes

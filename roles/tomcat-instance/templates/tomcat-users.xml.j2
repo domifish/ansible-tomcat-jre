@@ -3,8 +3,8 @@
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xsi:schemaLocation="http://tomcat.apache.org/xml tomcat-users.xsd"
               version="1.0">
-  <role rolename="admin-gui"/>
   <role rolename="manager-gui"/>
-  <user username="{{ inst }}" password="mng-{{ env }}" roles="manager-gui"/>
-  <user username="{{ inst }}" password="adm-{{ env }}" roles="admin-gui"/>
+  <role rolename="admin-gui"/>
+  <user username="mng-{{ dom_name }}" password="mng-{{ dom_name }}-{{ farm_env }}" roles="manager-gui"/>
+  <user username="adm-{{ dom_name }}" password="adm-{{ dom_name }}-{{ farm_env }}" roles="admin-gui"/>
 </tomcat-users>

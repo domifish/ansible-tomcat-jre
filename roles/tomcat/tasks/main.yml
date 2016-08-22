@@ -4,10 +4,10 @@
       group: name=tec-tomcat gid=1146 state=present system=yes
 
     - name: "Tomcat Engine | Create tomcat user "
-      user: name=tec-tomcat comment="John Doe" uid=1146 group=tec-tomcat system=yes
+      user: name=tec-tomcat comment="tomcat user" uid=1146 group=tec-tomcat system=yes
 
     - name: "Tomcat Engine | Create tomcat specific env user "
-      user: name={{ user }} comment="John Doe" uid={{ uid }} group=tec-tomcat system=yes
+      user: name={{ user }} comment="tomcat environnement user " uid={{ uid }} group=tec-tomcat system=yes
 
 # System Config
 # ---

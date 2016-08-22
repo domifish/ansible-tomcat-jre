@@ -12,25 +12,41 @@
 
 [all:vars]
 ansible_connection=ssh 
-ansible_user=root
-ansible_ssh_pass=Cloudtest1234
+#ansible_user=root
+#ansible_ssh_pass=Cloudtest1234
+ansible_user=a901118 
+ansible_become=true
 
-#-- Fermes
-[farm01-int]
-svtestvra099
+#-- GENERIQUE
+[integration:children]
+farm01-int
+
+
+#-- FERMES
+[farm01:vars]
+farm_number="01"
 
 [farm01:children]
 farm01-int
 
-[farm01:vars]
-farm_number=01
+[farm01-int]
+sv0600
 
 
-#-- Atterrissage des domaines sur les fermes
-[pepspmt-i-1]
-svtestvra099
+#-- DOMAINE
+[dom_ouverture:vars]
+dom_name=      "ouverture"
+proxy_name=    "vad.oney.com"
 
-[pepspmt-i-1:vars]
+[dom_ouverture:children]
+ouverture-011-i
+
+
+#-- INSTANCE
+[ouverture-011-i]
+sv0600
+
+[ouverture-011-i:vars]
 supp=          ""
 xmx=           1024
 xms=           1024
@@ -39,16 +55,3 @@ shut_port=     7500
 https_port=    7400
 jmx_port=      7100
 MaxMetaspace=  384
-
-[dom_pepspmt:vars]
-dom_name=      "pepsmt"
-proxy_name=    "vad.oney.com"
-
-[dom_pepspmt:children]
-pepspmt-i-1
-
-[integration:children]
-farm01-int
-
-[alldom:children]
-dom_pepspmt
