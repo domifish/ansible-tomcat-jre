@@ -4,7 +4,8 @@
               xsi:schemaLocation="http://tomcat.apache.org/xml tomcat-users.xsd"
               version="1.0">
   <role rolename="manager-gui"/>
+  <role rolename="manager-script"/>
   <role rolename="admin-gui"/>
-  <user username="mng-{{ dom_name }}" password="mng-{{ dom_name }}-{{ farm_env }}" roles="manager-gui"/>
+  <user username="mng-{{ dom_name }}" password="mng-{{ dom_name }}-{{ farm_env }}" roles="manager-gui,manager-script"/>
   <user username="adm-{{ dom_name }}" password="adm-{{ dom_name }}-{{ farm_env }}" roles="admin-gui"/>
 </tomcat-users>
