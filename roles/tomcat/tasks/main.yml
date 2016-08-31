@@ -63,3 +63,6 @@
 
     - name: "Rights | Ensure sudoers config for exploit exists"
       lineinfile: "dest=/etc/sudoers.d/tomcat_admin create=yes state=present regexp='%exploit .* tomcat' line='%exploit ALL=(root)  NOPASSWD:  /usr/bin/systemctl * tomcat*'"
+
+    - name: "Rights | Ensure sudoers config for exploit exists"
+      lineinfile: "dest=/etc/sudoers.d/tomcat_admin create=yes state=present regexp='tec-tomcat .* bash' line='tec-tomcat ALL=(root)  NOPASSWD:  /bin/bash -l'"
