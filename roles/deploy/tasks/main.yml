@@ -1,0 +1,17 @@
+# System Prerequisites
+# ---
+    - name: "Deploy | Create tec-deploy  user"
+      user: 
+        name=tec-deploy uid=1155
+        shell=/bin/bash
+        group=exploit
+        state=present system=yes
+
+    - name: "Deploy | Set up Authorized keys for user jenkins"
+      authorized_key: user=tec-deploy key="{{ item }}"
+      with_file:
+         - /etc/ansible/pub_keys/jenkins@sv0592.pub
+         - /etc/ansible/pub_keys/tec-deploy@sv0592.pub
+
+    - name: "Deploy | Set up Sudoers for deploy user"
+      file: src=sudo_tomcat_admin dest=/etc/sudoers.d/deploy_admin

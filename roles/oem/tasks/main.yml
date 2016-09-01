@@ -6,6 +6,7 @@
     - name: "Grid | Create oragrid user"
       user: 
         name=oragrid uid=90002 
+        group=oinstall
         password='$6$WT6oKTUm$Nj/nNjvxzDc9IgyldCP/D5slPyz1gRzJ392a66LSuyf8Nm2IbNRNyTR/DOdE7c39KX3q0hliSvoLq/.FMQepx/' 
         state=present system=yes
 

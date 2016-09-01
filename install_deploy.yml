@@ -1,0 +1,3 @@
+- hosts: sv0600
+  roles:
+     - role: deploy

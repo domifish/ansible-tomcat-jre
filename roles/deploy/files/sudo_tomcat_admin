@@ -1,0 +1,3 @@
+Runas_Alias     TOMCAT = tec-tom-i,tec-tom-q,tec-tom-s,tec-tom-p
+tec-deploy ALL=(TOMCAT) NOPASSWD: ALL
+%exploit ALL=(tec-deploy) NOPASSWD: ALL
