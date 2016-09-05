@@ -1,0 +1,13 @@
+[ouverture]
+sv0600 inst="ouverture-011-i"  farm_node="1" farm_env="i" supp="" xmx=1024 xms=1024 http_port=7800 shut_port=7500 https_port=7400 jmx_port=7100 MaxMetaspace=384
+
+[ouverture:vars]
+proxy_name="vad.oney.com"
+
+[integration:children]
+ouverture
+
+[integration:vars]
+env_dev="int"
+user="tec-tom-i"
+uid="1142"

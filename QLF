@@ -1,0 +1,17 @@
+[ouverture]
+sv0601 inst="ouverture-011-q"  farm_node="1" farm_env="q" supp="" xmx=1024 xms=1024 http_port=8800 shut_port=8500 https_port=8400 jmx_port=8100 MaxMetaspace=384
+
+[ouverture:vars]
+proxy_name="oney.fr"
+
+
+##########################
+
+[qualification:children]
+ouverture
+peps
+
+[qualification:vars]
+env_dev="qlf"
+user="tec-tom-q"
+uid="1143"
