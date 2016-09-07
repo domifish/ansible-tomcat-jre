@@ -1,0 +1,6 @@
+- hosts: ouverture
+  environment:
+    http_proxy: http://proxy_centrale:3128
+    https_proxy: http://proxy_centrale:3128
+  roles:
+     - role: test
