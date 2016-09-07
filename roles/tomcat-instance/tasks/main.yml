@@ -26,7 +26,7 @@
       register: cacert
 
     - name: "Tomcat Instance | Create Autosign CA"
-      shell: {{ jre_base_dir }}/default/bin/keytool -genkey -noprompt -alias tomcat -dname "CN={{ ansible_hostname }}, OU=DSI, O=ONEY, L=CROIX, ST=NORD, C=FR" -keyalg RSA -keystore {{ tomcat_conf_dir }}/instances/{{ inst }}/security/cacert.jks -storepass changeit -keypass changeit 
+      shell: "{{ jre_base_dir }}/default/bin/keytool -genkey -noprompt -alias tomcat -dname \"CN={{ ansible_hostname }}, OU=DSI, O=ONEY, L=CROIX, ST=NORD, C=FR\" -keyalg RSA -keystore {{ tomcat_conf_dir }}/instances/{{ inst }}/security/cacert.jks -storepass changeit -keypass changeit"
       when: cacert.stat.exists is defined and cacert.stat.exists == False
 
     - name: Create log directory
