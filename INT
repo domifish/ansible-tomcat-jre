@@ -8,6 +8,7 @@ proxy_name="vad.oney.com"
 ouverture
 
 [integration:vars]
-env_dev="int"
+env_graphite="int"
+env_spring="int"
 user="tec-tom-i"
 uid="1142"

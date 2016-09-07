@@ -14,4 +14,4 @@
          - /etc/ansible/pub_keys/tec-deploy@sv0592.pub
 
     - name: "Deploy | Set up Sudoers for deploy user"
-      file: src=sudo_tomcat_admin dest=/etc/sudoers.d/deploy_admin
+      copy: src=sudo_tomcat_admin dest=/etc/sudoers.d/deploy_admin

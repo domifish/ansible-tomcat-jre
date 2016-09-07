@@ -9,9 +9,9 @@ proxy_name="oney.fr"
 
 [qualification:children]
 ouverture
-peps
 
 [qualification:vars]
-env_dev="qlf"
+env_graphite="qlf"
+env_spring="qlf"
 user="tec-tom-q"
 uid="1143"
