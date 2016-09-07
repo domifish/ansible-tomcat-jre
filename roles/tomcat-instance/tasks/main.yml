@@ -47,6 +47,18 @@
          - "webapps"
       when: instance.stat.exists is defined and instance.stat.exists == False
 
+    - name: Create Catalina/localhost directory
+      file: path={{ instance_dir }}/webapps/Catalina/localhost state=directory recurse=yes
+      when: instance.stat.exists is defined and instance.stat.exists == False
+
+    - name: Restrict manager access
+      template: src=manager.xmlj2 dest={{ instance_dir }}/{{ webapps }}/Catalina/localhost/manager.xml
+      when: instance.stat.exists is defined and instance.stat.exists == False
+
+    - name: Restrict host-manager access
+      template: src=host-manager.xmlj2 dest={{ instance_dir }}/{{ webapps }}/Catalina/localhost/host-manager.xml
+      when: instance.stat.exists is defined and instance.stat.exists == False
+
     - name: Create application log directory
       file: path={{ logapp_dir }} state=directory mode=0755
 
