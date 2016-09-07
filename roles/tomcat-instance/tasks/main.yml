@@ -146,3 +146,6 @@
       with_items:
          - "server.xml"
          - "context.xml"
+
+    - name: "Tomcat | Starting .."
+      service: name=tomcat-{{ inst }} state=started

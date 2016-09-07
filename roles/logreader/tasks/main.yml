@@ -13,3 +13,6 @@
     - name: "Logs | Create symlink "
       file: src=/var/log/tomcat dest=/var/www/html/tomcat state=link
       when: not tomcat_logs_httpd_link.stat.exists
+
+    - name: "Httpd starting"
+      service: name=httpd state=started
