@@ -1,2 +1,2 @@
-10 00 * * * root find /var/log/tomcat/instances/*/ -type f \( -name "*.log" -o -name "*.txt" \) -mtime +1 -exec gzip {} \;
-12 00 * * * root find /var/log/tomcat/instances/*/ -type f \( -name "*.log" -o -name "*.txt" \) -mtime +8 –delete
+10 00 * * * root find /var/log/tomcat/instances/*/ -type f \( -name "*.log" -o -name "*.txt" \) -mtime +5 -exec gzip {} \;
+12 00 * * * root find /var/log/tomcat/instances/*/ -type f \( -name "*.log.gz" -o -name "*.txt.gz" \) -mtime +10 –delete
